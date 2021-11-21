@@ -9,18 +9,18 @@ class Response
      const RESPONSE_OK = 'OK';
      const RESPONSE_KO = 'KO';
 
-     protected $state;
+     protected $status;
      protected $msg;
 
-     public function __construct( $state, $msg ) 
+     public function __construct( $status, $msg ) 
      {
-          $this->state = $state;
+          $this->status = $status;
           $this->msg = $msg;
      }
 
      public function isOk()
      {
-           return $this->state == 'ok';
+           return $this->status == 'OK';
      }
 
      public function getMsg()
@@ -28,10 +28,10 @@ class Response
           return $this->msg;
      }
 
-     static public function getArrayResponse( $state, $msg )
+     static public function getArrayResponse( $status, $msg )
      {
 		return [
-			'state' => $state,
+			'status' => $status,
 			'msg' => $msg
 		];
      }
@@ -39,7 +39,7 @@ class Response
      static public function getArrayResponseOK($msg)
      {
 		return [
-			'state' => self::RESPONSE_OK,
+			'status' => self::RESPONSE_OK,
 			'msg' => $msg
 		];
      }
@@ -47,13 +47,13 @@ class Response
      static public function getArrayResponseKO($msg)
      {
 		return [
-			'state' => self::RESPONSE_KO,
+			'status' => self::RESPONSE_KO,
 			'msg' => $msg
 		];
      }
 
      static public function isArrayResponseOK($response){
-		return $response['state'] == self::RESPONSE_OK;
+		return $response['status'] == self::RESPONSE_OK;
      }
 
      static public function responseKO($class, $function, $error, $msg = null)
@@ -62,7 +62,7 @@ class Response
 		
 		return 
 		[
-			'state' => self::RESPONSE_KO,
+			'status' => self::RESPONSE_KO,
 			'msg'   => $msg ? $msg : \Lang::get( 'api.error' )
 		];
      }

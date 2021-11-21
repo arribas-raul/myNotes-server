@@ -52,7 +52,7 @@ class SubjectController extends Controller
                 return Response::getArrayResponseKO(\Lang::get( 'api.dataEmpty' ));                
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
+                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
                 $array['data'] = $data;
                     
                 return $array;
@@ -68,6 +68,7 @@ class SubjectController extends Controller
 
     /**Create functions ********************************/
     public function create(Request $request){
+        \Log::info(['request' => $request]); 
 
         $validator = Validator::make(
             $request->all(), 
@@ -96,7 +97,7 @@ class SubjectController extends Controller
                 return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.createSuccess' ));
+                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.createSuccess' ));
                 $array['data'] = $model;
                     
                 return $array;
@@ -158,15 +159,6 @@ class SubjectController extends Controller
 
     /**Delete functions ********************************/
     public function delete(Request $request){
-        $validator = Validator::make(
-            $request->all(), 
-            [
-                'id' => 'required'
-            ]);
-
-        if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
-        }
 
         $user = $request->user;
         $id   = $request->id;
@@ -190,7 +182,6 @@ class SubjectController extends Controller
                 Response::getArrayResponseOK(\Lang::get( 'api.deleteSuccess' )) : 
                 Response::getArrayResponseKO(\Lang::get( 'api.error' ));
                
-
         }catch (\Exception $e){
             return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
                     

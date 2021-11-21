@@ -65,12 +65,12 @@ class SubjectNoteController extends Controller
 
     /**Create functions ********************************/
     public function create(Request $request){
-
         $validator = Validator::make(
             $request->all(), 
             [
                 'id_subject' => 'required',
-                'note'       => 'required|string|min:2|max:1000'
+                'name'       => 'required|string|min:2|max:100',
+                'note'       => 'required|string|min:0|max:1000'
             ]);
 
         if($validator->fails()){
@@ -78,11 +78,12 @@ class SubjectNoteController extends Controller
         }
 
         $user        = $request->user;
+        $name        = $request->name;
         $note        = $request->note;
         $id_subject  = $request->id_subject;
 
         try{
-            $model = SubjectNoteModel::createObject($id_subject, $note);
+            $model = SubjectNoteModel::createObject($id_subject, $name, $note);
 
             if (empty($model) ){
                 return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
@@ -109,6 +110,7 @@ class SubjectNoteController extends Controller
             $request->all(), 
             [
                 'id'   => 'required',
+                'name' => 'required|string|min:2|max:100',
                 'note' => 'required|string|min:2|max:1000'
             ]);
 
@@ -118,6 +120,7 @@ class SubjectNoteController extends Controller
 
         $user        = $request->user;
         $id          = $request->id;
+        $name        = $request->name;
         $note        = $request->note;
 
         try{
@@ -127,13 +130,13 @@ class SubjectNoteController extends Controller
                 return Response::getArrayResponseOK(\Lang::get( 'api.objectEmpty' ));
             }
 
-            $model = SubjectNoteModel::updateObject($id, $note);
+            $model = SubjectNoteModel::updateObject($id, $name, $note);
 
             if (empty($model) ){
                 return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.updateSuccess' ));
+                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.updateSuccess' ));
                 $array['data'] = $model;
                     
                 return $array;
@@ -149,15 +152,6 @@ class SubjectNoteController extends Controller
 
     /**Delete functions ********************************/
     public function delete(Request $request){
-        $validator = Validator::make(
-            $request->all(), 
-            [
-                'id' => 'required'
-            ]);
-
-        if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
-        }
 
         $user = $request->user;
         $id   = $request->id;
