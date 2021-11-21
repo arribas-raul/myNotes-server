@@ -49,6 +49,7 @@ class CreateSubjectiveNotesTables extends Migration
         Schema::create('subject_note', function (Blueprint $table){
 			$table->bigIncrements('id');
             $table->bigInteger('id_subject')->unsigned()->nullable();
+            $table->string('name', 100);
 			$table->text('note');
 			$table->boolean('is_deleted')->default(0);
 			$table->timestamps();
