@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 
 use App\Models\SubjectNoteModel;
-use App\Objects\Response;
+use App\Helpers\LogHelper;
 
 class SubjectNoteController extends Controller
 {
@@ -17,23 +17,28 @@ class SubjectNoteController extends Controller
         $id = $request->id;
 
         try{
-            $model = SubjectNoteModel::getForId($id);
+            $data = SubjectNoteModel::getForId($id);
 
-            if (empty($model) ){
-				return Response::getArrayResponseKO(\Lang::get( 'api.objectEmpty' ));                
+            if (empty($data) ){
+                $msg = \Lang::get( 'api.objectEmpty' );
+
+                return response()->json(compact('msg'), 406);                
 				
 			}else{
-				$array = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
-				$array['data'] = $model;
-					
-				return $array;
+                $msg = \Lang::get( 'api.getSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200); 
 			}
 
         }catch (\Exception $e){
-			return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());     
 					
 		}catch (\PDOException $e){
-			return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
 		} 
     }
 
@@ -46,20 +51,25 @@ class SubjectNoteController extends Controller
             $data = SubjectNoteModel::list($id_subject);
 
             if (empty($data) || count($data) == 0 ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.dataEmpty' ));                
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 200);           
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
-                $array['data'] = $data;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.getSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200); 
             }
 
         }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());       
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());    
         }
     } 
 
@@ -74,7 +84,9 @@ class SubjectNoteController extends Controller
             ]);
 
         if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
+            $msg = $validator->errors();
+
+            return response()->json(compact('msg'), 406); 
         }
 
         $user        = $request->user;
@@ -83,23 +95,28 @@ class SubjectNoteController extends Controller
         $id_subject  = $request->id_subject;
 
         try{
-            $model = SubjectNoteModel::createObject($id_subject, $name, $note);
+            $data = SubjectNoteModel::createObject($id_subject, $name, $note);
 
-            if (empty($model) ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
+            if (empty($data) ){
+                $msg = \Lang::get( 'api.dataExist' );
+
+                return response()->json(compact('msg'), 406);          
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.createSuccess' ));
-                $array['data'] = $model;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.createSuccess' );
+
+                return response()->json(compact('msg', 'data'), 201); 
             }
 
         }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());      
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }           
        
@@ -115,7 +132,9 @@ class SubjectNoteController extends Controller
             ]);
 
         if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
+            $msg = $validator->errors();
+
+            return response()->json(compact('msg'), 406); 
         }
 
         $user        = $request->user;
@@ -124,29 +143,36 @@ class SubjectNoteController extends Controller
         $note        = $request->note;
 
         try{
-            $model = SubjectNoteModel::getForId($id);
+            $data = SubjectNoteModel::getForId($id);
 
-            if(empty($model)){
-                return Response::getArrayResponseOK(\Lang::get( 'api.objectEmpty' ));
+            if(empty($data)){
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 406);
             }
 
-            $model = SubjectNoteModel::updateObject($id, $name, $note);
+            $data = SubjectNoteModel::updateObject($id, $name, $note);
 
-            if (empty($model) ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
+            if (empty($data) ){
+                $msg = \Lang::get( 'api.error' );
+
+                return response()->json(compact('msg'), 500);               
                 
             }else{
-                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.updateSuccess' ));
-                $array['data'] = $model;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.updateSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200); 
             }
 
-        }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+        }catch (\Exception $e){    
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());     
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }
 
@@ -160,21 +186,33 @@ class SubjectNoteController extends Controller
             $model = SubjectNoteModel::getForId($id);
 
             if(empty($model)){
-                return Response::getArrayResponseOK(\Lang::get( 'api.objectEmpty' ));
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 406);
             }
 
             $delete = SubjectNoteModel::deleteObject($id);
 
-            return isset($delete) ?
-                Response::getArrayResponseOK(\Lang::get( 'api.deleteSuccess' )) : 
-                Response::getArrayResponseKO(\Lang::get( 'api.error' ));
-               
+            if(isset($delete)){
+                $msg = \Lang::get( 'api.deleteSuccess' );
 
-        }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+                return response()->json(compact('msg', 'data'), 200); 
+
+            }else{
+                $msg = \Lang::get( 'api.error' );
+
+                return response()->json(compact('msg'), $e->getStatusCode()); 
+            }  
+
+        }catch (\Exception $e){ 
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());      
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }
 }

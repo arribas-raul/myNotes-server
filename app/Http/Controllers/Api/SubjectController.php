@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 
 use App\Models\SubjectModel;
 use App\Models\SubjectNoteModel;
-
-use App\Objects\Response;
+use App\Helpers\LogHelper;
 
 class SubjectController extends Controller
 {
@@ -20,24 +19,26 @@ class SubjectController extends Controller
         $id = $request->id;
 
         try{
-            $model = SubjectModel::getForId($id);
+            $data = SubjectModel::getForId($id);
 
-            if (empty($model) ){
-				return Response::getArrayResponseKO(\Lang::get( 'api.objectEmpty' ));                
+            if (empty($data) ){
+                return response()->json(['error' => \Lang::get( 'api.objectEmpty' )], 406);
 				
 			}else{
-                
-				$array = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
-				$array['data'] = $model;
-					
-				return $array;
+                $msg = \Lang::get( 'api.getSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200);  
 			}
 
         }catch (\Exception $e){
-			return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
 					
 		}catch (\PDOException $e){
-			return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());       
 		} 
     }
 
@@ -49,27 +50,30 @@ class SubjectController extends Controller
             $data = SubjectModel::list($user->id);
 
             if (empty($data) || count($data) == 0 ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.dataEmpty' ));                
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 200);
                 
             }else{
-                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.getSuccess' ));
-                $array['data'] = $data;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.getSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200);  
             }
 
         }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     } 
 
     /**Create functions ********************************/
     public function create(Request $request){
-        \Log::info(['request' => $request]); 
-
         $validator = Validator::make(
             $request->all(), 
             [
@@ -77,7 +81,9 @@ class SubjectController extends Controller
             ]);
 
         if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
+            $msg = $validator->errors();
+
+            return response()->json(compact('msg'), 406); 
         }
 
         $user        = $request->user;
@@ -85,29 +91,36 @@ class SubjectController extends Controller
         $description = $request->description;
 
         try{
-            $model = SubjectModel::getForName($user->id, $name);
+            $data = SubjectModel::getForName($user->id, $name);
 
             if(isset($model)){
-                return Response::getArrayResponseOK(\Lang::get( 'api.dataExist' ));
+                $msg = \Lang::get( 'api.dataExist' );
+
+                return response()->json(compact('msg'), 406);    
             }
 
-            $model = SubjectModel::createObject($user->id, $name, $description);
+            $data = SubjectModel::createObject($user->id, $name, $description);
 
-            if (empty($model) ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
+            if (empty($data) ){
+                $msg = \Lang::get( 'api.error' );
+
+                return response()->json(compact('msg'), 500);             
                 
             }else{
-                $array['response'] = Response::getArrayResponseOK(\Lang::get( 'api.createSuccess' ));
-                $array['data'] = $model;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.createSuccess' );
+
+                return response()->json(compact('msg', 'data'), 201); 
             }
 
-        }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+        }catch (\Exception $e){  
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());   
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }           
        
@@ -122,7 +135,9 @@ class SubjectController extends Controller
             ]);
 
         if($validator->fails()){
-            return Response::getArrayResponseKO($validator->errors());
+            $msg = $validator->errors();
+
+            return response()->json(compact('msg'), 406); 
         }
 
         $user        = $request->user;
@@ -131,29 +146,36 @@ class SubjectController extends Controller
         $description = $request->description;
 
         try{
-            $model = SubjectModel::getForId($id);
+            $data = SubjectModel::getForId($id);
 
-            if(empty($model)){
-                return Response::getArrayResponseOK(\Lang::get( 'api.objectEmpty' ));
+            if(empty($data)){
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 406);
             }
 
-            $model = SubjectModel::updateObject($id, $name, $description);
+            $data = SubjectModel::updateObject($id, $name, $description);
 
-            if (empty($model) ){
-                return Response::getArrayResponseKO(\Lang::get( 'api.error' ));                
+            if (empty($data) ){
+                $msg = \Lang::get( 'api.error' );
+
+                return response()->json(compact('msg'), 500);               
                 
             }else{
-                $array = Response::getArrayResponseOK(\Lang::get( 'api.updateSuccess' ));
-                $array['data'] = $model;
-                    
-                return $array;
+                $msg = \Lang::get( 'api.updateSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200);
             }
 
         }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
                     
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }
 
@@ -167,7 +189,9 @@ class SubjectController extends Controller
             $model = SubjectModel::getForId($id);
 
             if(empty($model)){
-                return Response::getArrayResponseOK(\Lang::get( 'api.objectEmpty' ));
+                $msg = \Lang::get( 'api.dataEmpty' );
+
+                return response()->json(compact('msg'), 406);
             }
 
             $transaction = DB::transaction(function() use ( $user, $id )
@@ -178,15 +202,26 @@ class SubjectController extends Controller
                 return $result;
             });
 
-            return $transaction > 0 ?
-                Response::getArrayResponseOK(\Lang::get( 'api.deleteSuccess' )) : 
-                Response::getArrayResponseKO(\Lang::get( 'api.error' ));
+            if($transaction > 0){
+                $msg = \Lang::get( 'api.deleteSuccess' );
+
+                return response()->json(compact('msg', 'data'), 200);
+
+            }else{
+                $msg = \Lang::get( 'api.error' );
+
+                return response()->json(compact('msg'), $e->getStatusCode()); 
+            }
                
-        }catch (\Exception $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);            
-                    
+        }catch (\Exception $e){ 
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
+
         }catch (\PDOException $e){
-            return Response::responseKO(__CLASS__, __FUNCTION__, $e);
+            LogHelper::printError(__CLASS__, __FUNCTION__, $e );
+
+            return response()->json(['error' => \Lang::get( 'api.error' )], $e->getStatusCode());
         }
     }
 }
