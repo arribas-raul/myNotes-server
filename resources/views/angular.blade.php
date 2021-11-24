@@ -35,6 +35,6 @@
 
 <script src="../../angular/runtime.e227d1a0e31cbccbf8ec.js" defer></script>
 <script src="../../angular/polyfills.ccaf79e5df2f18a7801d.js" defer></script>
-<script src="../../../angular/main.53970cd482fd910e5ab2.js" defer></script>
+<script src="../../../angular/main.bfdc26f7cfb79b65555d.js" defer></script>
 </body>
 </html>
